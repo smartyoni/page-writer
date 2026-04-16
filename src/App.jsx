@@ -39,7 +39,8 @@ function cn(...inputs) {
 const DEFAULT_NOTE_1 = "# 제목 1\n이곳은 세트 A의 노트입니다.\n\n## 시작하기\n내용을 수정해보세요.";
 const DEFAULT_NOTE_2 = "# 제목 2\n이곳은 세트 B의 노트입니다.\n\n## 기능 안내\n목차 탭에서 헤더를 클릭하면 이동합니다.";
 
-const getDocTitle = (content) => {
+const getDocTitle = (content, legacyTitle) => {
+  if (legacyTitle) return legacyTitle;
   if (!content) return "새 문서";
   const match = content.match(/^#\s+(.*)$/m);
   if (match && match[1].trim()) return match[1].trim();
@@ -47,7 +48,7 @@ const getDocTitle = (content) => {
   return firstLine?.substring(0, 25) || "제목 없음";
 };
 
-const DOC_COLLECTION = 'documents';
+const DOC_COLLECTION = 'users/default_user/documents';
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
@@ -123,9 +124,33 @@ export default function App() {
 
   // Firestore Real-time Sync
   useEffect(() => {
-    const q = query(collection(db, DOC_COLLECTION), orderBy('order', 'asc'));
+    // We order by updatedAt (Nexus style) or modifiedAt
+    // To ensure documents without 'order' are visible, we use updatedAt which is common
+    const q = query(collection(db, DOC_COLLECTION), orderBy('updatedAt', 'desc'));
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const docs = snapshot.docs.map(d => {
+        const data = d.data();
+        // Compatibility Mapping:
+        // 1. Content: If 'content' is missing but 'pages' exists, use pages[0]
+        let content = data.content;
+        if (!content && data.pages && Array.isArray(data.pages)) {
+          content = data.pages[0] || "";
+        }
+        
+        // 2. Timestamp: Support both modifiedAt (Timestamp) and updatedAt (Millis)
+        let modifiedAt = data.modifiedAt;
+        if (data.updatedAt && !modifiedAt) {
+          modifiedAt = Timestamp.fromMillis(data.updatedAt);
+        }
+
+        return { 
+          id: d.id, 
+          ...data,
+          content: content || "",
+          modifiedAt: modifiedAt || Timestamp.now()
+        };
+      });
       setDocuments(docs);
       
       // Initial Slot Setup if empty
@@ -375,7 +400,7 @@ export default function App() {
                       {idx + 1}
                     </span>
                     <h3 className="font-bold text-[14px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Noto Serif KR', serif" }}>
-                      {getDocTitle(doc.content)}
+                      {getDocTitle(doc.content, doc.title)}
                     </h3>
                   </div>
                   <button onClick={(e) => handleDeleteDoc(doc.id, e)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all p-1">
