@@ -141,9 +141,8 @@ export default function App() {
 
   // Firestore Real-time Sync
   useEffect(() => {
-    // We order by updatedAt (Nexus style) or modifiedAt
-    // To ensure documents without 'order' are visible, we use updatedAt which is common
-    const q = query(collection(db, DOC_COLLECTION), orderBy('updatedAt', 'desc'));
+    // 'order' 필드 기준으로 오름차순 정렬하여 사용자 지정 순서를 유지합니다.
+    const q = query(collection(db, DOC_COLLECTION), orderBy('order', 'asc'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs = snapshot.docs.map(d => {
@@ -195,6 +194,7 @@ export default function App() {
       createdAt: Timestamp.now(),
       modifiedAt: Timestamp.now(),
       updatedAt: Date.now(),
+      // 리스트의 맨 위에 위치시키기 위해 가장 작은 order 값보다 1 작은 값을 부여합니다.
       order: documents.length > 0 ? Math.min(...documents.map(d => d.order || 0)) - 1 : 0
     };
     await setDoc(doc(db, DOC_COLLECTION, id), newDoc);
