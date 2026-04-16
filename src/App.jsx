@@ -353,16 +353,6 @@ export default function App() {
               <span className="font-bold text-sm capitalize">{tab}</span>
             </button>
           ))}
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={cn(
-              "flex items-center gap-2 px-5 py-3 border-b-2 transition-all",
-              activeTab === 'settings' ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-emerald-700"
-            )}
-          >
-            <Settings size={18} />
-            <span className="font-bold text-sm capitalize">설정</span>
-          </button>
         </div>
         <div className="flex items-center p-1.5 gap-1 bg-emerald-900/5 rounded-xl mr-2">
           {['A', 'B'].map(set => (
@@ -444,38 +434,6 @@ export default function App() {
                   </span>
                 </button>
               ))}
-            </div>
-          ) : activeTab === 'settings' ? (
-            <div className="flex-1 flex flex-col p-6 space-y-8 overflow-y-auto bg-gray-50/50 rounded-2xl mt-4">
-              <section className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <Cloud size={20} className="text-emerald-600" />
-                  클라우드 데이터 마이그레이션
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  현재 브라우저에 임시 저장된 글들을 서버로 안전하게 옮깁니다. 
-                  <br /><strong>모바일과 동기화하기 위해 반드시 한 번 실행해야 합니다.</strong>
-                </p>
-                <button
-                  onClick={handleCloudSync}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Upload size={18} />
-                  기존 데이터를 서버로 업로드
-                </button>
-              </section>
-
-              <section className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <Smartphone size={20} className="text-emerald-600" />
-                  기기 간 동기화 (싱크 키)
-                </h3>
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm space-y-3">
-                  <p className="text-sm text-gray-600">
-                    현재 모든 기기가 동일한 공간을 공유하고 있습니다. 별도의 설정 없이 바로 동기화됩니다.
-                  </p>
-                </div>
-              </section>
             </div>
           ) : (
             <div className="h-full group relative">
