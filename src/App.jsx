@@ -463,10 +463,10 @@ export default function App() {
               </div>
             </div>
           )}
-          <div className="flex gap-1 bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1.5 rounded-2xl shadow-lg">
+          <div className="flex gap-1.5 bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1.5 rounded-2xl shadow-lg">
             <button 
               onClick={handleNewDoc} 
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[120px]"
             >
               <PlusCircle size={15} /> 새 문서
             </button>
@@ -475,13 +475,13 @@ export default function App() {
               <>
                 <button 
                   onClick={handleCopy} 
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors"
+                  className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors min-w-[120px]"
                 >
                   <Copy size={15} /> 복사
                 </button>
                 <button 
                   onClick={() => setShowClearConfirm(true)} 
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors"
+                  className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors min-w-[120px]"
                 >
                   <Trash2 size={15} /> 초기화
                 </button>
