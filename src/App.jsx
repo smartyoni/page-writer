@@ -11,7 +11,11 @@ import {
   PlusCircle,
   Copy,
   Trash2,
-  Layout
+  Layout,
+  Settings,
+  Cloud,
+  Smartphone,
+  Upload
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
