@@ -28,7 +28,8 @@ import {
   query, 
   orderBy, 
   Timestamp,
-  writeBatch
+  writeBatch,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from './lib/firebase';
 
@@ -103,7 +104,8 @@ export default function App() {
         const docRef = doc(db, DOC_COLLECTION, currentDocId);
         setDoc(docRef, { 
           content: markdown, 
-          modifiedAt: Timestamp.now() 
+          modifiedAt: serverTimestamp(),
+          updatedAt: Date.now()
         }, { merge: true });
       }
     },
@@ -176,6 +178,7 @@ export default function App() {
       content: "# 새 문서\n이곳에 내용을 입력하세요.",
       createdAt: Timestamp.now(),
       modifiedAt: Timestamp.now(),
+      updatedAt: Date.now(),
       order: documents.length > 0 ? Math.min(...documents.map(d => d.order || 0)) - 1 : 0
     };
     await setDoc(doc(db, DOC_COLLECTION, id), newDoc);
@@ -261,6 +264,7 @@ export default function App() {
           content: d.content,
           createdAt: d.createdAt ? Timestamp.fromMillis(d.createdAt) : Timestamp.now(),
           modifiedAt: d.modifiedAt ? Timestamp.fromMillis(d.modifiedAt) : Timestamp.now(),
+          updatedAt: d.updatedAt || d.modifiedAt || Date.now(),
           order: d.order || i
         });
       });
