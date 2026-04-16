@@ -448,24 +448,46 @@ export default function App() {
               <div className="editor-container">
                 <EditorContent editor={editor} />
               </div>
-              <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 group-hover:opacity-100 flex flex-col items-center">
-                {showClearConfirm && (
-                  <div className="mb-3 bg-white/90 backdrop-blur-xl border border-emerald-900/10 p-4 rounded-2xl shadow-2xl z-50 min-w-[180px]">
-                    <p className="text-[11px] font-bold text-center text-emerald-900 mb-4">정말 초기화하시겠습니까?</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-500 bg-slate-100">취소</button>
-                      <button onClick={handleClearNote} className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-rose-500 text-white">확인</button>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-1 bg-emerald-900/5 p-1 rounded-xl">
-                  <button onClick={handleNewDoc} className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold text-emerald-700 hover:bg-white/50"><PlusCircle size={14} /> 새 문서</button>
-                  <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold text-emerald-800 hover:bg-white/50"><Copy size={14} /> 복사</button>
-                  <button onClick={() => setShowClearConfirm(true)} className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-white/50"><Trash2 size={14} /> 초기화</button>
-                </div>
+            </div>
+          )}
+        </div>
+        
+        {/* --- Global Action Footer --- */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center">
+          {showClearConfirm && (
+            <div className="mb-3 bg-white/95 backdrop-blur-xl border border-emerald-900/10 p-4 rounded-2xl shadow-2xl z-50 min-w-[180px]">
+              <p className="text-[11px] font-bold text-center text-emerald-900 mb-4">정말 초기화하시겠습니까?</p>
+              <div className="flex gap-2">
+                <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-500 bg-slate-100">취소</button>
+                <button onClick={handleClearNote} className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-rose-500 text-white">확인</button>
               </div>
             </div>
           )}
+          <div className="flex gap-1 bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1.5 rounded-2xl shadow-lg">
+            <button 
+              onClick={handleNewDoc} 
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors"
+            >
+              <PlusCircle size={15} /> 새 문서
+            </button>
+            
+            {activeTab === 'note' && (
+              <>
+                <button 
+                  onClick={handleCopy} 
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors"
+                >
+                  <Copy size={15} /> 복사
+                </button>
+                <button 
+                  onClick={() => setShowClearConfirm(true)} 
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors"
+                >
+                  <Trash2 size={15} /> 초기화
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </main>
     </div>
