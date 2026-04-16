@@ -30,7 +30,7 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db, getDeviceId, setDeviceId } from './lib/firebase';
+import { db } from './lib/firebase';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -47,8 +47,7 @@ const getDocTitle = (content) => {
   return firstLine?.substring(0, 25) || "제목 없음";
 };
 
-const DEVICE_ID = getDeviceId();
-const DOC_COLLECTION = `documents_${DEVICE_ID}`;
+const DOC_COLLECTION = 'documents';
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
@@ -249,15 +248,6 @@ export default function App() {
     }
   };
 
-  const handleUpdateSyncKey = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const newKey = formData.get('syncKey');
-    if (newKey && confirm(`동기화 키를 '${newKey}'로 변경하시겠습니까? 앱이 재시작됩니다.`)) {
-      setDeviceId(newKey);
-      window.location.reload();
-    }
-  };
 
   const extractTOC = (text) => {
     const lines = text.split('\n');
@@ -452,33 +442,10 @@ export default function App() {
                   기기 간 동기화 (싱크 키)
                 </h3>
                 <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm space-y-3">
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">현재 내 싱크 키</label>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 p-3 bg-gray-100 rounded-lg text-emerald-700 font-mono font-bold text-center text-base">
-                      {DEVICE_ID}
-                    </code>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    모바일 앱 설정에서 위 키를 입력하면 데이터가 실시간으로 연결됩니다.
+                  <p className="text-sm text-gray-600">
+                    현재 모든 기기가 동일한 공간을 공유하고 있습니다. 별도의 설정 없이 바로 동기화됩니다.
                   </p>
                 </div>
-
-                <form onSubmit={handleUpdateSyncKey} className="space-y-3 pt-2">
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">다른 기기와 연결하기</label>
-                  <div className="flex gap-2">
-                    <input
-                      name="syncKey"
-                      placeholder="상대 기기의 싱크 키 입력"
-                      className="flex-1 p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
-                    />
-                    <button
-                      type="submit"
-                      className="px-6 bg-gray-800 text-white rounded-xl text-sm font-medium hover:bg-gray-900 transition-colors"
-                    >
-                      연결
-                    </button>
-                  </div>
-                </form>
               </section>
             </div>
           ) : (
