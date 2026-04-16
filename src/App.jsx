@@ -65,6 +65,7 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const saveTimeoutRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const currentDocId = slots[activeSet];
   const currentDoc = documents.find(d => d.id === currentDocId) || documents[0];
@@ -93,7 +94,12 @@ export default function App() {
       CustomHeading.configure({
         levels: [1, 2, 3],
       }),
-      Markdown,
+      Markdown.configure({
+        html: true,
+        tightLists: true,
+        tightListClass: 'tight',
+        transformPastedText: true,
+      }),
       Placeholder.configure({
         placeholder: '이곳에 글을 작성하세요. 마크다운 문법(#, -, ** 등)이 실시간으로 적용됩니다...',
       }),
@@ -180,10 +186,11 @@ export default function App() {
     localStorage.setItem('post_helper_slots', JSON.stringify(slots));
   }, [slots]);
 
-  const handleNewDoc = async () => {
+  const handleNewDocWithContent = async (content, title) => {
     const id = Date.now().toString();
     const newDoc = {
-      content: "# 새 문서\n이곳에 내용을 입력하세요.",
+      title: title || '제목 없음',
+      content: content || "# 새 문서\n이곳에 내용을 입력하세요.",
       createdAt: Timestamp.now(),
       modifiedAt: Timestamp.now(),
       updatedAt: Date.now(),
@@ -192,6 +199,41 @@ export default function App() {
     await setDoc(doc(db, DOC_COLLECTION, id), newDoc);
     setSlots(prev => ({ ...prev, [activeSet]: id }));
     setActiveTab('note');
+  };
+
+  const handleNewDoc = () => handleNewDocWithContent('', '제목 없음');
+
+  const handleFileImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target.result;
+      const title = file.name.replace(/\.[^/.]+$/, ""); // 확장자 제거
+      handleNewDocWithContent(content, title);
+    };
+    reader.readAsText(file);
+    e.target.value = null; // 리셋
+  };
+
+  const handleFileExport = () => {
+    if (!currentDoc) return;
+    const markdown = editor.storage.markdown.getMarkdown();
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // 파일명 정제 (제목 또는 첫 줄 사용)
+    const rawTitle = getDocTitle(markdown, currentDoc.title);
+    const safeTitle = rawTitle.replace(/[<>:"/\\|?*]/g, "").substring(0, 50);
+    
+    link.href = url;
+    link.download = `${safeTitle || 'document'}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleSelectDoc = (id) => {
@@ -454,6 +496,14 @@ export default function App() {
         
         {/* --- Global Action Footer --- */}
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileImport} 
+            accept=".md,.markdown,text/markdown" 
+            className="hidden" 
+          />
+
           {showClearConfirm && (
             <div className="mb-3 bg-white/95 backdrop-blur-xl border border-emerald-900/10 p-4 rounded-2xl shadow-2xl z-50 min-w-[180px]">
               <p className="text-[11px] font-bold text-center text-emerald-900 mb-4">정말 초기화하시겠습니까?</p>
@@ -463,29 +513,45 @@ export default function App() {
               </div>
             </div>
           )}
-          <div className="flex bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1 rounded-2xl shadow-lg overflow-hidden flex-nowrap max-w-[95vw]">
+          <div className="flex bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1 rounded-2xl shadow-lg overflow-hidden flex-nowrap max-w-[98vw] md:max-w-[95vw]">
             <button 
               onClick={handleNewDoc} 
-              className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
+              className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
             >
-              <PlusCircle size={15} /> 새문서
+              <PlusCircle size={14} /> 새문서
             </button>
             
-            {activeTab === 'note' && (
+            <div className="w-[1px] h-4 bg-emerald-900/10 self-center" />
+            
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-emerald-600 hover:bg-emerald-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
+            >
+              <Upload size={14} /> 불러오기
+            </button>
+            
+            {(activeTab === 'note' || activeTab === 'toc') && (
               <>
-                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-0.5" />
+                <div className="w-[1px] h-4 bg-emerald-900/10 self-center" />
+                <button 
+                  onClick={handleFileExport} 
+                  className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-blue-600 hover:bg-blue-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
+                >
+                  <Download size={14} /> 내보내기
+                </button>
+                <div className="w-[1px] h-4 bg-emerald-900/10 self-center" />
                 <button 
                   onClick={handleCopy} 
-                  className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
+                  className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
                 >
-                  <Copy size={15} /> 복사
+                  <Copy size={14} /> 복사
                 </button>
-                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-0.5" />
+                <div className="w-[1px] h-4 bg-emerald-900/10 self-center" />
                 <button 
                   onClick={() => setShowClearConfirm(true)} 
-                  className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
+                  className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-rose-500 hover:bg-rose-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
                 >
-                  <Trash2 size={15} /> 초기화
+                  <Trash2 size={14} /> 초기화
                 </button>
               </>
             )}
