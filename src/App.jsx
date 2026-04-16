@@ -15,7 +15,8 @@ import {
   Settings,
   Cloud,
   Smartphone,
-  Upload
+  Upload,
+  Download
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
