@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  @apply bg-[#f2faf5] text-slate-900 font-medium antialiased;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(5, 150, 105, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(5, 150, 105, 0.2);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(5, 150, 105, 0.1);
+}
+
+/* Tiptap / ProseMirror Editor Styling */
+.ProseMirror {
+    outline: none !important;
+    min-height: 500px;
+    padding-top: 1rem;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+    color: #94a3b8;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.ProseMirror h1 {
+    font-family: 'Noto Serif KR', serif !important;
+    font-size: 21px !important;
+    font-weight: 900 !important;
+    color: #2563eb !important; /* Premium Blue 600 */
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    line-height: 1.2 !important;
+}
+
+.ProseMirror h2 {
+    font-family: 'Noto Serif KR', serif !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #16a34a !important; /* Premium Green 600 */
+    margin-top: 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.ProseMirror h3 {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #047857 !important; /* Emerald 700 */
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.ProseMirror p {
+    font-size: 14px !important; /* Premium writing size */
+    line-height: 1.8 !important;
+    color: #334155 !important;
+    margin-bottom: 1rem !important;
+}
+
+.ProseMirror > *:first-child {
+    margin-top: 0 !important;
+}
+
+.ProseMirror ul {
+    list-style-type: disc !important;
+    margin-left: 1.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.ProseMirror ol {
+    list-style-type: decimal !important;
+    margin-left: 1.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+@keyframes highlight-flash {
+    0% { 
+        background-color: rgba(251, 191, 36, 0.4); /* Vibrant Gold/Yellow */
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #f59e0b;
+    }
+    100% { 
+        background-color: transparent; 
+        transform: scale(1);
+        box-shadow: none;
+        border-left: 4px solid transparent;
+    }
+}
+
+.highlight-flash {
+    animation: highlight-flash 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-left: -8px; /* Offset the padding for a clean look */
+    display: inline-block;
+    width: fit-content;
+}
+
+.markdown-body h1 { @apply text-[22px] font-bold mt-6 mb-4 text-pink-600; }
+.markdown-body h2 { @apply text-[18px] font-bold mt-5 mb-3 text-blue-600; }
+.markdown-body h3 { @apply text-[16px] font-bold mt-4 mb-2 text-slate-900; }
+.markdown-body > *:first-child { margin-top: 0 !important; }
+.markdown-body p { @apply my-2 leading-relaxed text-slate-800 font-medium; }
+.markdown-body ul { @apply my-4 text-slate-700 font-medium space-y-2; list-style-type: none; padding-left: 0; }
+.markdown-body ol { @apply my-4 text-slate-700 font-medium space-y-2; list-style-type: none; padding-left: 0; }
+
+.markdown-body li { 
+    @apply relative pl-6;
+}
+
+/* Custom Bullet for Unordered Lists */
+.markdown-body ul > li::before {
+    content: "•";
+    @apply absolute left-0 text-slate-900 font-bold;
+}
+
+/* Custom Numbering for Ordered Lists */
+.markdown-body ol { counter-reset: item; }
+.markdown-body ol > li { counter-increment: item; }
+.markdown-body ol > li::before {
+    content: counter(item) ".";
+    @apply absolute left-0 text-slate-900 font-bold text-xs mt-0.5;
+}
+
+.markdown-body hr { @apply border-t-2 border-orange-400/50 my-8 shadow-sm; }
+.markdown-body blockquote { @apply border-l-4 border-primary/50 pl-4 py-1 italic bg-emerald-50 my-4 rounded-r; }
+.markdown-body pre { @apply bg-slate-100 p-4 rounded-lg my-4 overflow-x-auto border border-emerald-100; }
+.markdown-body code { @apply bg-emerald-100/50 px-1 rounded text-emerald-700; }
