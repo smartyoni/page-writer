@@ -64,6 +64,7 @@ export default function App() {
   const [modalPosition, setModalPosition] = useState('bottom');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const saveTimeoutRef = useRef(null);
 
   const currentDocId = slots[activeSet];
   const currentDoc = documents.find(d => d.id === currentDocId) || documents[0];
@@ -99,15 +100,19 @@ export default function App() {
     ],
     content: currentDoc?.content || '',
     onUpdate: ({ editor }) => {
-      const markdown = editor.storage.markdown.getMarkdown();
-      if (currentDocId) {
-        const docRef = doc(db, DOC_COLLECTION, currentDocId);
-        setDoc(docRef, { 
-          content: markdown, 
-          modifiedAt: serverTimestamp(),
-          updatedAt: Date.now()
-        }, { merge: true });
-      }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      
+      saveTimeoutRef.current = setTimeout(() => {
+        const markdown = editor.storage.markdown.getMarkdown();
+        if (currentDocId) {
+          const docRef = doc(db, DOC_COLLECTION, currentDocId);
+          setDoc(docRef, { 
+            content: markdown, 
+            modifiedAt: serverTimestamp(),
+            updatedAt: Date.now()
+          }, { merge: true });
+        }
+      }, 1000); // 1 second debounce
     },
     editorProps: {
       attributes: {
@@ -117,10 +122,13 @@ export default function App() {
   }, [currentDocId]);
 
   useEffect(() => {
-    if (editor && currentDoc && editor.storage.markdown.getMarkdown() !== currentDoc.content) {
-      editor.commands.setContent(currentDoc.content, false, {
-        parseOptions: { preserveWhitespace: 'full' }
-      });
+    if (editor && currentDoc && !editor.isFocused) {
+      const currentMarkdown = editor.storage.markdown.getMarkdown();
+      if (currentMarkdown !== currentDoc.content) {
+        editor.commands.setContent(currentDoc.content, false, {
+          parseOptions: { preserveWhitespace: 'full' }
+        });
+      }
     }
   }, [currentDocId, editor, currentDoc?.content]);
 
