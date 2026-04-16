@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      injectRegister: null, // Disable automatic injection to prevent console errors in extension
+      injectRegister: false, // Switching from null to false for stricter disabling
       registerType: 'autoUpdate',
       includeAssets: ['icon128.png', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
