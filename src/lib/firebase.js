@@ -15,14 +15,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
+const STORAGE_KEY = 'page_writer_device_id';
+
 /**
- * Utility to get or create a persistent Device ID for no-login isolation.
+ * Utility to get current Device ID (Sync Key).
  */
 export const getDeviceId = () => {
-  let deviceId = localStorage.getItem('page_writer_device_id');
+  let deviceId = localStorage.getItem(STORAGE_KEY);
   if (!deviceId) {
-    deviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('page_writer_device_id', deviceId);
+    // Generate a shorter, friendly Sync Key by default
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    deviceId = `Writer-${randomSuffix}`;
+    localStorage.setItem(STORAGE_KEY, deviceId);
   }
   return deviceId;
+};
+
+/**
+ * Utility to update Device ID (Sync Key).
+ */
+export const setDeviceId = (newId) => {
+  if (newId && newId.trim()) {
+    localStorage.setItem(STORAGE_KEY, newId.trim());
+    window.location.reload(); // Reload to re-initialize Firestore listeners with new ID
+  }
 };

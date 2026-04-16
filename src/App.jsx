@@ -26,7 +26,7 @@ import {
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db, getDeviceId } from './lib/firebase';
+import { db, getDeviceId, setDeviceId } from './lib/firebase';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -54,7 +54,7 @@ export default function App() {
   });
 
   const [activeSet, setActiveSet] = useState('A');
-  const [activeTab, setActiveTab] = useState('note');
+  const [activeTab, setActiveTab] = useState('note'); // 'list', 'toc', 'note', 'settings'
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [modalPosition, setModalPosition] = useState('bottom');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -217,6 +217,44 @@ export default function App() {
     setDraggedItemIndex(null);
   };
 
+  const handleCloudSync = async () => {
+    const localData = localStorage.getItem('post_helper_documents');
+    if (!localData) {
+      alert("업로드할 로컬 데이터가 없습니다.");
+      return;
+    }
+    
+    try {
+      const localDocs = JSON.parse(localData);
+      const batch = writeBatch(db);
+      localDocs.forEach((d, i) => {
+        const id = d.id || Date.now().toString() + i;
+        batch.set(doc(db, DOC_COLLECTION, id), {
+          content: d.content,
+          createdAt: d.createdAt ? Timestamp.fromMillis(d.createdAt) : Timestamp.now(),
+          modifiedAt: d.modifiedAt ? Timestamp.fromMillis(d.modifiedAt) : Timestamp.now(),
+          order: d.order || i
+        });
+      });
+      await batch.commit();
+      alert("모든 로컬 데이터가 성공적으로 클라우드로 업로드되었습니다!");
+      localStorage.removeItem('post_helper_documents');
+    } catch (e) {
+      console.error(e);
+      alert("동기화 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleUpdateSyncKey = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newKey = formData.get('syncKey');
+    if (newKey && confirm(`동기화 키를 '${newKey}'로 변경하시겠습니까? 앱이 재시작됩니다.`)) {
+      setDeviceId(newKey);
+      window.location.reload();
+    }
+  };
+
   const extractTOC = (text) => {
     const lines = text.split('\n');
     const headers = [];
@@ -292,6 +330,16 @@ export default function App() {
               <span className="font-bold text-sm capitalize">{tab}</span>
             </button>
           ))}
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={cn(
+              "flex items-center gap-2 px-5 py-3 border-b-2 transition-all",
+              activeTab === 'settings' ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-emerald-700"
+            )}
+          >
+            <Settings size={18} />
+            <span className="font-bold text-sm capitalize">설정</span>
+          </button>
         </div>
         <div className="flex items-center p-1.5 gap-1 bg-emerald-900/5 rounded-xl mr-2">
           {['A', 'B'].map(set => (
@@ -329,7 +377,6 @@ export default function App() {
                   )}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    {/* Order Number based on list position */}
                     <span className="shrink-0 font-black text-[15px] text-rose-500/80 w-5 font-serif italic" style={{ fontFamily: "'Noto Serif KR', serif" }}>
                       {idx + 1}
                     </span>
@@ -374,6 +421,61 @@ export default function App() {
                   </span>
                 </button>
               ))}
+            </div>
+          ) : activeTab === 'settings' ? (
+            <div className="flex-1 flex flex-col p-6 space-y-8 overflow-y-auto bg-gray-50/50 rounded-2xl mt-4">
+              <section className="space-y-4">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <Cloud size={20} className="text-emerald-600" />
+                  클라우드 데이터 마이그레이션
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  현재 브라우저에 임시 저장된 글들을 서버로 안전하게 옮깁니다. 
+                  <br /><strong>모바일과 동기화하기 위해 반드시 한 번 실행해야 합니다.</strong>
+                </p>
+                <button
+                  onClick={handleCloudSync}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Upload size={18} />
+                  기존 데이터를 서버로 업로드
+                </button>
+              </section>
+
+              <section className="space-y-4 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  <Smartphone size={20} className="text-emerald-600" />
+                  기기 간 동기화 (싱크 키)
+                </h3>
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm space-y-3">
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">현재 내 싱크 키</label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 p-3 bg-gray-100 rounded-lg text-emerald-700 font-mono font-bold text-center text-base">
+                      {DEVICE_ID}
+                    </code>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    모바일 앱 설정에서 위 키를 입력하면 데이터가 실시간으로 연결됩니다.
+                  </p>
+                </div>
+
+                <form onSubmit={handleUpdateSyncKey} className="space-y-3 pt-2">
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">다른 기기와 연결하기</label>
+                  <div className="flex gap-2">
+                    <input
+                      name="syncKey"
+                      placeholder="상대 기기의 싱크 키 입력"
+                      className="flex-1 p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 bg-gray-800 text-white rounded-xl text-sm font-medium hover:bg-gray-900 transition-colors"
+                    >
+                      연결
+                    </button>
+                  </div>
+                </form>
+              </section>
             </div>
           ) : (
             <div className="h-full group relative">
