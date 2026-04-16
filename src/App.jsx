@@ -463,27 +463,27 @@ export default function App() {
               </div>
             </div>
           )}
-          <div className="flex bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1.5 rounded-2xl shadow-lg overflow-hidden">
+          <div className="flex bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1 rounded-2xl shadow-lg overflow-hidden flex-nowrap max-w-[95vw]">
             <button 
               onClick={handleNewDoc} 
-              className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[120px] whitespace-nowrap"
+              className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
             >
               <PlusCircle size={15} /> 새문서
             </button>
             
             {activeTab === 'note' && (
               <>
-                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-1" />
+                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-0.5" />
                 <button 
                   onClick={handleCopy} 
-                  className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors min-w-[120px] whitespace-nowrap"
+                  className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
                 >
                   <Copy size={15} /> 복사
                 </button>
-                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-1" />
+                <div className="w-[1px] h-4 bg-emerald-900/10 self-center mx-0.5" />
                 <button 
                   onClick={() => setShowClearConfirm(true)} 
-                  className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors min-w-[120px] whitespace-nowrap"
+                  className="flex items-center justify-center gap-1.5 px-4 lg:px-8 py-2.5 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors min-w-[80px] lg:min-w-[120px] whitespace-nowrap"
                 >
                   <Trash2 size={15} /> 초기화
                 </button>
