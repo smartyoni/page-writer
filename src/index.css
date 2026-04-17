@@ -90,8 +90,8 @@ body {
 }
 
 @media (min-width: 1024px) {
-    .ProseMirror p {
-        font-size: 10px !important; /* Changed from 12px to 10px as requested */
+    .ProseMirror p, .ProseMirror li {
+        font-size: 10px !important; /* Apply to paragraphs AND list items */
     }
 }
 
@@ -144,7 +144,7 @@ body {
 }
 
 @media (min-width: 1024px) {
-    .markdown-body p {
+    .markdown-body p, .markdown-body li {
         @apply text-[10px];
     }
 }
