@@ -249,6 +249,8 @@ export default function App() {
       return;
     }
     setDeleteConfirmId(id);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setModalPosition(window.innerHeight - rect.bottom < 100 ? 'top' : 'bottom');
   };
 
   const confirmDelete = async (e) => {
@@ -454,6 +456,28 @@ export default function App() {
                   >
                     <Trash2 size={18} />
                   </button>
+                  {deleteConfirmId === doc.id && (
+                    <div 
+                      className={cn(
+                        "absolute right-2 z-[50] bg-white shadow-2xl border border-emerald-900/10 p-1.5 rounded-xl flex items-center gap-1.5 transition-all",
+                        modalPosition === 'top' ? "bottom-full mb-1.5 translate-y-0" : "top-full mt-1.5 -translate-y-0"
+                      )}
+                    >
+                      <span className="text-[10px] font-bold text-slate-500 px-1 whitespace-nowrap">삭제할까요?</span>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(null); }} 
+                        className="px-2 py-1 rounded-lg text-[10px] bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                      >
+                        취소
+                      </button>
+                      <button 
+                        onClick={confirmDelete} 
+                        className="px-2 py-1 rounded-lg text-[10px] bg-rose-500 text-white font-bold hover:bg-rose-600 shadow-sm transition-colors"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -561,41 +585,6 @@ export default function App() {
             )}
           </div>
         </div>
-        {deleteConfirmId && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-            <div 
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" 
-              onClick={() => setDeleteConfirmId(null)}
-            />
-            <div className="relative bg-white rounded-[32px] shadow-2xl border border-emerald-900/10 p-8 max-w-[320px] w-full transform transition-all animate-in fade-in zoom-in duration-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-rose-50 rounded-[24px] flex items-center justify-center text-rose-500 mb-6 shadow-inner">
-                  <Trash2 size={32} />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2" style={{ fontFamily: "'Noto Serif KR', serif" }}>문서 삭제</h3>
-                <p className="text-sm font-bold text-slate-500 mb-8 leading-relaxed">
-                  정말 이 문서를 삭제하시겠습니까?<br/>
-                  <span className="text-rose-500/80">삭제된 문서는 복구할 수 없습니다.</span>
-                </p>
-                
-                <div className="flex w-full gap-3">
-                  <button 
-                    onClick={() => setDeleteConfirmId(null)} 
-                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
-                  >
-                    취소
-                  </button>
-                  <button 
-                    onClick={confirmDelete} 
-                    className="flex-1 py-4 rounded-2xl text-sm font-black bg-rose-500 text-white hover:bg-rose-600 shadow-xl shadow-rose-500/30 transition-all active:scale-95"
-                  >
-                    삭제하기
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );
