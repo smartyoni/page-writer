@@ -36,12 +36,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('@tiptap') || id.includes('prosemirror')) {
-              return 'vendor-editor';
-            }
-            if (id.includes('firebase')) {
-              return 'vendor-firebase';
-            }
             return 'vendor';
           }
         }
