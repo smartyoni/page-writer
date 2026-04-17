@@ -160,16 +160,22 @@ body {
 
 @keyframes highlight-flash {
     0% { 
-        background-color: rgba(251, 191, 36, 0.4); /* Vibrant Gold/Yellow */
+        background-color: rgba(16, 185, 129, 0.25); /* Emerald-light background */
         transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-left: 4px solid #f59e0b;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        color: #059669 !important; /* Brighter emerald text during flash */
+    }
+    50% {
+        background-color: rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        text-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
     }
     100% { 
         background-color: transparent; 
         transform: scale(1);
         box-shadow: none;
-        border-left: 4px solid transparent;
+        text-shadow: none;
     }
 }
 
