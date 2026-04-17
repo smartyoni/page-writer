@@ -555,9 +555,11 @@ export default function App() {
             </div>
           )}
         </div>
-        
-        {/* --- Global Action Footer --- */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center">
+      </main>
+
+      {/* --- Global Action Footer --- */}
+      <footer className="bg-white/80 backdrop-blur-md border-t border-emerald-900/10 p-2 z-20 safe-bottom">
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -575,7 +577,7 @@ export default function App() {
               </div>
             </div>
           )}
-          <div className="flex bg-white/80 backdrop-blur-md border border-emerald-900/10 p-1 rounded-2xl shadow-lg overflow-hidden flex-nowrap max-w-[98vw] md:max-w-[95vw]">
+          <div className="flex bg-white/50 border border-emerald-900/5 p-1 rounded-2xl shadow-sm overflow-hidden flex-nowrap w-full">
             <button 
               onClick={handleNewDoc} 
               className="flex items-center justify-center gap-1 px-3 lg:px-6 py-2.5 rounded-xl text-[11px] font-bold text-emerald-700 hover:bg-emerald-50 transition-colors min-w-[65px] lg:min-w-[100px] whitespace-nowrap"
@@ -619,7 +621,7 @@ export default function App() {
             )}
           </div>
         </div>
-      </main>
+      </footer>
     </div>
   );
 }
