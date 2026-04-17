@@ -83,10 +83,16 @@ body {
 }
 
 .ProseMirror p {
-    font-size: 14px !important; /* Premium writing size */
+    font-size: 14px !important; /* Premium writing size for mobile */
     line-height: 1.8 !important;
     color: #334155 !important;
     margin-bottom: 1rem !important;
+}
+
+@media (min-width: 1024px) {
+    .ProseMirror p {
+        font-size: 13px !important; /* Slightly smaller for desktop as requested */
+    }
 }
 
 .ProseMirror > *:first-child {
@@ -133,7 +139,15 @@ body {
 .markdown-body h2 { @apply text-[18px] font-bold mt-5 mb-3 text-blue-600; }
 .markdown-body h3 { @apply text-[16px] font-bold mt-4 mb-2 text-slate-900; }
 .markdown-body > *:first-child { margin-top: 0 !important; }
-.markdown-body p { @apply my-2 leading-relaxed text-slate-800 font-medium; }
+.markdown-body p { 
+    @apply my-2 leading-relaxed text-slate-800 font-medium text-[14px]; 
+}
+
+@media (min-width: 1024px) {
+    .markdown-body p {
+        @apply text-[13px];
+    }
+}
 .markdown-body ul { @apply my-4 text-slate-700 font-medium space-y-2; list-style-type: none; padding-left: 0; }
 .markdown-body ol { @apply my-4 text-slate-700 font-medium space-y-2; list-style-type: none; padding-left: 0; }
 
