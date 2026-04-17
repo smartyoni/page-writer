@@ -133,7 +133,7 @@ body {
 .ProseMirror li li,
 .ProseMirror li li p {
     font-weight: 400 !important;
-    font-size: 14px !important; /* Mobile: was 13px */
+    font-size: 15px !important; /* Mobile: was 14px */
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     line-height: 1.6 !important;
@@ -142,7 +142,7 @@ body {
 @media (min-width: 300px) {
     .ProseMirror li li,
     .ProseMirror li li p {
-        font-size: 10px !important; /* Desktop: was 9px */
+        font-size: 11px !important; /* Desktop: was 10px */
     }
 }
 
@@ -224,7 +224,7 @@ body {
 .markdown-body li li,
 .markdown-body li li p {
     font-weight: 400 !important;
-    font-size: 14px !important; /* Mobile */
+    font-size: 15px !important; /* Mobile */
     @apply mt-0 mb-0;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
@@ -233,7 +233,7 @@ body {
 @media (min-width: 300px) {
     .markdown-body li li,
     .markdown-body li li p {
-        font-size: 10px !important; /* Desktop */
+        font-size: 11px !important; /* Desktop */
     }
 }
 
