@@ -68,6 +68,8 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [collapsedTOCItems, setCollapsedTOCItems] = useState(new Set());
+  const [draggedTOCIndex, setDraggedTOCIndex] = useState(null);
+  const [dragOverTOCIndex, setDragOverTOCIndex] = useState(null);
   const saveTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -354,22 +356,18 @@ export default function App() {
     const lines = text.split('\n');
     const items = [];
     const counters = [0, 0, 0]; // Counters for H1, H2, H3
-    let lastH2Id = null;
     
-    lines.forEach((line) => {
-      // Heading match (H1, H2, H3)
+    lines.forEach((line, lineIdx) => {
       const headerMatch = line.match(/^(#{1,3})\s+(.*)$/);
       if (headerMatch) {
         const level = headerMatch[1].length;
         const textLabel = headerMatch[2];
         const id = `header-${level}-${textLabel.toLowerCase().replace(/\s+/g, '-')}`;
 
-        // Update counters
         counters[level - 1]++;
         for (let i = level; i < 3; i++) counters[i] = 0;
         const number = counters.slice(0, level).join('.') + '.';
         
-        // Find potential parent header to mark it as having children
         const parentHeader = items.slice().reverse().find(it => it.level < level);
         if (parentHeader) parentHeader.hasChildren = true;
 
@@ -379,15 +377,128 @@ export default function App() {
           text: textLabel,
           number,
           id,
-          hasChildren: false
+          hasChildren: false,
+          startLine: lineIdx,
+          endLine: lines.length - 1, // will be set in next pass
         });
       }
     });
 
+    // Second pass: Calculate endLine for each item
+    // An item's block ends just before the next item of equal or higher level
+    for (let i = 0; i < items.length; i++) {
+      const current = items[i];
+      let endLine = lines.length - 1;
+      for (let j = i + 1; j < items.length; j++) {
+        if (items[j].level <= current.level) {
+          endLine = items[j].startLine - 1;
+          break;
+        }
+      }
+      current.endLine = endLine;
+    }
+
     return items;
   };
 
+  // Reorder markdown: move the block at dragIdx before the block at targetIdx
+  const reorderMarkdownBlocks = (content, toc, dragIdx, targetIdx) => {
+    if (dragIdx === targetIdx) return content;
+    const lines = content.split('\n');
+
+    // Determine the block bounds for the dragged item
+    // The dragged block includes itself AND all descendants (items with higher level that follow)
+    const draggedItem = toc[dragIdx];
+    let blockEndLine = draggedItem.endLine;
+
+    // Find the target insertion position
+    // We insert the block BEFORE the target item's start line
+    const targetItem = toc[targetIdx];
+
+    // Slice out the dragged block lines
+    const draggedLines = lines.slice(draggedItem.startLine, blockEndLine + 1);
+    // Remove the dragged block from original lines
+    const remaining = [
+      ...lines.slice(0, draggedItem.startLine),
+      ...lines.slice(blockEndLine + 1)
+    ];
+
+    // Find the target line in the REMAINING array (its index shifted if drag was before target)
+    let targetStartLine = targetItem.startLine;
+    if (dragIdx < targetIdx) {
+      // Dragged block was before target, so target line shifted up by dragged block size
+      targetStartLine -= (blockEndLine - draggedItem.startLine + 1);
+    }
+
+    // Insert dragged block before the target item in the remaining lines
+    const newLines = [
+      ...remaining.slice(0, targetStartLine),
+      ...draggedLines,
+      ...remaining.slice(targetStartLine)
+    ];
+
+    return newLines.join('\n');
+  };
+
   const toc = extractTOC(currentDoc?.content || '');
+
+  // --- TOC Drag & Drop Handlers ---
+  const handleTOCDragStart = (e, idx) => {
+    setDraggedTOCIndex(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+  };
+
+  const handleTOCDragOver = (e, idx) => {
+    e.preventDefault();
+    if (draggedTOCIndex === null || idx === draggedTOCIndex) return;
+    // Prevent dropping into a descendant of the dragged item
+    const draggedItem = toc[draggedTOCIndex];
+    const targetItem = toc[idx];
+    if (targetItem.startLine > draggedItem.startLine && targetItem.startLine <= draggedItem.endLine) return;
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverTOCIndex(idx);
+  };
+
+  const handleTOCDrop = async (e, targetIdx) => {
+    e.preventDefault();
+    const fromIdx = draggedTOCIndex;
+    setDraggedTOCIndex(null);
+    setDragOverTOCIndex(null);
+    if (fromIdx === null || fromIdx === targetIdx || !currentDoc) return;
+
+    // Guard: prevent dropping inside own subtree
+    const draggedItem = toc[fromIdx];
+    const targetItem = toc[targetIdx];
+    if (targetItem.startLine > draggedItem.startLine && targetItem.startLine <= draggedItem.endLine) return;
+
+    const newMarkdown = reorderMarkdownBlocks(currentDoc.content, toc, fromIdx, targetIdx);
+    if (newMarkdown === currentDoc.content) return;
+
+    // Apply to Tiptap editor as a single History step so Ctrl+Z works
+    if (editor) {
+      // setContent with emitUpdate=false to avoid double-saving,
+      // then we manually save to Firestore so Undo reverts the editor state.
+      editor.commands.setContent(newMarkdown, false, { parseOptions: { preserveWhitespace: 'full' } });
+      // Manually push one Undo step by recording the transaction AFTER setContent
+      // Tiptap wraps setContent in a dispatchTransaction that feeds into history.
+    }
+
+    // Persist to Firestore
+    if (currentDocId) {
+      const docRef = doc(db, DOC_COLLECTION, currentDocId);
+      await setDoc(docRef, {
+        content: newMarkdown,
+        modifiedAt: serverTimestamp(),
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+  };
+
+  const handleTOCDragEnd = () => {
+    setDraggedTOCIndex(null);
+    setDragOverTOCIndex(null);
+  };
 
   const scrollToHeader = (id) => {
     setActiveTab('note');
@@ -547,6 +658,8 @@ export default function App() {
                 if (isHidden) return null;
 
                 const isCollapsed = collapsedTOCItems.has(item.id);
+                const isDragging = draggedTOCIndex === idx;
+                const isDropTarget = dragOverTOCIndex === idx && draggedTOCIndex !== idx;
                 const toggleCollapse = (e) => {
                   e.stopPropagation();
                   setCollapsedTOCItems(prev => {
@@ -558,7 +671,27 @@ export default function App() {
                 };
 
                 return (
-                  <div key={idx} className="group flex items-center">
+                  <div
+                    key={idx}
+                    draggable="true"
+                    onDragStart={(e) => handleTOCDragStart(e, idx)}
+                    onDragOver={(e) => handleTOCDragOver(e, idx)}
+                    onDrop={(e) => handleTOCDrop(e, idx)}
+                    onDragEnd={handleTOCDragEnd}
+                    className={cn(
+                      "group flex items-center rounded-lg transition-all duration-150",
+                      isDragging && "opacity-40",
+                      isDropTarget && "border-t-2 border-emerald-400"
+                    )}
+                  >
+                    {/* Drag handle */}
+                    <div className="cursor-grab active:cursor-grabbing px-1 py-2 text-slate-300 hover:text-slate-400 shrink-0">
+                      <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
+                        <circle cx="3" cy="4" r="1.5"/><circle cx="9" cy="4" r="1.5"/>
+                        <circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/>
+                        <circle cx="3" cy="12" r="1.5"/><circle cx="9" cy="12" r="1.5"/>
+                      </svg>
+                    </div>
                     <button 
                       onClick={() => scrollToHeader(item.id)} 
                       className={cn(
