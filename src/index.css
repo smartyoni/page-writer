@@ -82,12 +82,18 @@ body {
     margin-bottom: 0.5rem !important;
 }
 
-/* Universal base styles (No media queries for font size) */
+/* Universal base styles (Mobile default: 14px) */
 .ProseMirror p {
     font-size: 14px !important;
     line-height: 1.8 !important;
     color: #334155 !important;
     margin-bottom: 1rem !important;
+}
+
+@media (min-width: 300px) {
+    .ProseMirror p, .ProseMirror li, .ProseMirror li p {
+        font-size: 10px !important;
+    }
 }
 
 .ProseMirror ul, .ProseMirror ol {
@@ -104,24 +110,40 @@ body {
     line-height: 1.8;
 }
 
-/* Level 1: Bold, Large (Universal) - Target p inside li to beat global !important */
+/* Level 1: Bold, Large - Target p inside li to beat global !important */
 .ProseMirror > ul > li, 
 .ProseMirror > ol > li,
 .ProseMirror > ul > li > p,
 .ProseMirror > ol > li > p {
     font-weight: 700 !important;
-    font-size: 16px !important; /* Base 14 + 2 */
-    margin-bottom: 0.25rem !important; /* Tightened */
+    font-size: 16px !important; /* Mobile */
+    margin-bottom: 0.25rem !important;
 }
 
-/* Level 2+: Normal, Level-up size (Universal) */
+@media (min-width: 300px) {
+    .ProseMirror > ul > li, 
+    .ProseMirror > ol > li,
+    .ProseMirror > ul > li > p,
+    .ProseMirror > ol > li > p {
+        font-size: 12px !important; /* Desktop: 10 + 2 */
+    }
+}
+
+/* Level 2+: Normal, Level-up size */
 .ProseMirror li li,
 .ProseMirror li li p {
     font-weight: 400 !important;
-    font-size: 15px !important; /* Base 14 + 1 */
+    font-size: 13px !important; /* Mobile: 14 - 1 */
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     line-height: 1.6 !important;
+}
+
+@media (min-width: 300px) {
+    .ProseMirror li li,
+    .ProseMirror li li p {
+        font-size: 9px !important; /* Desktop: 10 - 1 */
+    }
 }
 
 .ProseMirror li p {
@@ -168,29 +190,51 @@ body {
     @apply my-2 leading-relaxed text-slate-800 font-medium text-[14px]; 
 }
 
+@media (min-width: 300px) {
+    .markdown-body p, .markdown-body li, .markdown-body li p {
+        @apply text-[10px];
+    }
+}
+
 .markdown-body ul, .markdown-body ol { @apply my-4 text-slate-700 font-medium; list-style-type: none; padding-left: 0; }
 .markdown-body ul { @apply space-y-1; } 
 .markdown-body ol { @apply space-y-1; }
 
 .markdown-body li p { @apply my-0.5; }
 
-/* Preview List Hierarchy (Universal) */
+/* Preview List Hierarchy */
 .markdown-body > ul > li, 
 .markdown-body > ol > li,
 .markdown-body > ul > li > p,
 .markdown-body > ol > li > p {
     font-weight: 700 !important;
-    font-size: 16px !important;
-    @apply mb-1; /* Tightened from mb-3 */
+    font-size: 16px !important; /* Mobile */
+    @apply mb-1;
+}
+
+@media (min-width: 300px) {
+    .markdown-body > ul > li, 
+    .markdown-body > ol > li,
+    .markdown-body > ul > li > p,
+    .markdown-body > ol > li > p {
+        font-size: 12px !important; /* Desktop */
+    }
 }
 
 .markdown-body li li,
 .markdown-body li li p {
     font-weight: 400 !important;
-    font-size: 15px !important;
+    font-size: 13px !important; /* Mobile */
     @apply mt-0 mb-0;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+}
+
+@media (min-width: 300px) {
+    .markdown-body li li,
+    .markdown-body li li p {
+        font-size: 9px !important; /* Desktop */
+    }
 }
 
 .markdown-body li { 
