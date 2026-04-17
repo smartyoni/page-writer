@@ -135,7 +135,7 @@ body {
     font-weight: 400 !important;
     font-size: 15px !important; /* Mobile: was 14px */
     margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 0.3rem !important;
     line-height: 1.6 !important;
 }
 
@@ -147,7 +147,7 @@ body {
 }
 
 .ProseMirror li p {
-    margin-bottom: 0px !important; /* Remove paragraph gaps inside lists */
+    margin-bottom: 0.3rem !important; /* Add gap between list items */
     margin-top: 0px !important;
 }
 
@@ -225,9 +225,9 @@ body {
 .markdown-body li li p {
     font-weight: 400 !important;
     font-size: 15px !important; /* Mobile */
-    @apply mt-0 mb-0;
+    @apply mt-0;
     margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 0.3rem !important;
 }
 
 @media (min-width: 300px) {
