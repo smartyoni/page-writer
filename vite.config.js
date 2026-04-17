@@ -7,9 +7,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      injectRegister: false, // Switching from null to false for stricter disabling
+      injectRegister: false,
       registerType: 'autoUpdate',
-      includeAssets: ['icon128.png', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      includeAssets: ['icon128.png'],
       manifest: {
         name: 'Page Writer',
         short_name: 'Writer',
@@ -31,4 +31,21 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@tiptap') || id.includes('prosemirror')) {
+              return 'vendor-editor';
+            }
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 })
