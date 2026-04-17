@@ -18,7 +18,9 @@ import {
   Upload,
   Download,
   Lock,
-  Unlock
+  Unlock,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -65,6 +67,7 @@ export default function App() {
   const [modalPosition, setModalPosition] = useState('bottom');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const [collapsedTOCItems, setCollapsedTOCItems] = useState(new Set());
   const saveTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -349,31 +352,58 @@ export default function App() {
 
   const extractTOC = (text) => {
     const lines = text.split('\n');
-    const headers = [];
+    const items = [];
     const counters = [0, 0, 0]; // Counters for H1, H2, H3
+    let lastH2Id = null;
     
     lines.forEach((line) => {
-      const match = line.match(/^(#{1,3})\s+(.*)$/);
-      if (match) {
-        const level = match[1].length;
-        
+      // Heading match (H1, H2, H3)
+      const headerMatch = line.match(/^(#{1,3})\s+(.*)$/);
+      if (headerMatch) {
+        const level = headerMatch[1].length;
+        const textLabel = headerMatch[2];
+        const id = textLabel.toLowerCase().replace(/\s+/g, '-');
+
         // Update counters
         counters[level - 1]++;
-        // Reset lower level counters
         for (let i = level; i < 3; i++) counters[i] = 0;
-        
-        // Generate number string (e.g., 1., 1.1., 1.1.1.)
         const number = counters.slice(0, level).join('.') + '.';
         
-        headers.push({
+        const item = {
+          type: 'header',
           level,
-          text: match[2],
+          text: textLabel,
           number,
-          id: match[2].toLowerCase().replace(/\s+/g, '-')
+          id,
+          hasChildren: false
+        };
+
+        if (level === 2) lastH2Id = id;
+        items.push(item);
+        return;
+      }
+
+      // Top-level bullet match (starts with -, *, + and NO preceding spaces)
+      const bulletMatch = line.match(/^([-*+])\s+(.*)$/);
+      if (bulletMatch && lastH2Id) {
+        const textLabel = bulletMatch[2];
+        const bulletId = `bullet-${textLabel.toLowerCase().replace(/\s+/g, '-')}`;
+        
+        // Mark the parent H2 as having children
+        const parentH2 = items.find(it => it.id === lastH2Id);
+        if (parentH2) parentH2.hasChildren = true;
+
+        items.push({
+          type: 'bullet',
+          parentId: lastH2Id,
+          text: textLabel,
+          id: bulletId,
+          level: 3 // Display bullets as Level 3 (indented)
         });
       }
     });
-    return headers;
+
+    return items;
   };
 
   const toc = extractTOC(currentDoc?.content || '');
@@ -384,12 +414,15 @@ export default function App() {
       // Try finding by ID first
       let element = document.getElementById(id);
       
-      // Fallback: Find the header by text matching the TOC logic
+      // Fallback: Find by text matching the TOC logic
       if (!element) {
-        const headers = document.querySelectorAll('.ProseMirror h1, .ProseMirror h2, .ProseMirror h3');
-        element = Array.from(headers).find(h => 
-          h.textContent.trim().toLowerCase().replace(/\s+/g, '-') === id
-        );
+        // Find both headers and list items
+        const targets = document.querySelectorAll('.ProseMirror h1, .ProseMirror h2, .ProseMirror h3, .ProseMirror li');
+        element = Array.from(targets).find(el => {
+          const elText = el.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+          // Match standard header ID or our custom bullet- prefix
+          return elText === id || `bullet-${elText}` === id;
+        });
       }
 
       if (element) {
@@ -517,35 +550,70 @@ export default function App() {
             </div>
           ) : activeTab === 'toc' ? (
             <div className="py-4 space-y-1">
-              {toc.map((item, idx) => (
-                <button 
-                  key={idx} 
-                  onClick={() => scrollToHeader(item.id)} 
-                  className={cn(
-                    "w-full text-left p-3 rounded-lg transition-all hover:bg-white shadow-sm hover:shadow-md border border-transparent hover:border-emerald-100",
-                    item.level === 1 ? "text-[#f97316] font-black text-base" : 
-                    item.level === 2 ? "text-[#2563eb] font-extrabold text-sm ml-4" : 
-                    "text-slate-600 font-bold text-xs ml-8"
-                  )}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className={cn(
-                      "shrink-0 font-black tracking-tighter",
-                      item.level === 1 ? "text-lg text-[#2563eb]" : 
-                      item.level === 2 ? "text-sm text-[#16a34a]" : 
-                      "text-[10px] text-slate-500"
-                    )}>
-                      {item.number}
-                    </span>
-                    <span className={cn(
-                      "truncate transition-colors",
-                      item.level === 1 ? "font-black text-slate-900" :
-                      item.level === 2 ? "font-extrabold text-slate-800" :
-                      "font-bold text-slate-600"
-                    )}>{item.text}</span>
-                  </span>
-                </button>
-              ))}
+              {toc.map((item, idx) => {
+                // Determine if this item should be visible based on its parent's collapse state
+                const isChild = item.type === 'bullet' || (item.type === 'header' && item.level > 1);
+                const parentHeader = isChild ? [...toc].slice(0, idx).reverse().find(it => it.type === 'header' && it.level < item.level) : null;
+                const isHidden = parentHeader && collapsedTOCItems.has(parentHeader.id);
+
+                if (isHidden) return null;
+
+                const isCollapsed = collapsedTOCItems.has(item.id);
+                const toggleCollapse = (e) => {
+                  e.stopPropagation();
+                  setCollapsedTOCItems(prev => {
+                    const next = new Set(prev);
+                    if (next.has(item.id)) next.delete(item.id);
+                    else next.add(item.id);
+                    return next;
+                  });
+                };
+
+                return (
+                  <div key={idx} className="group flex items-center">
+                    <button 
+                      onClick={() => scrollToHeader(item.id)} 
+                      className={cn(
+                        "flex-1 text-left p-2.5 rounded-lg transition-all hover:bg-white shadow-sm hover:shadow-md border border-transparent hover:border-emerald-100 flex items-center justify-between",
+                        item.level === 1 ? "text-[#f97316] font-black text-base" : 
+                        item.level === 2 ? "text-[#2563eb] font-extrabold text-sm ml-4" : 
+                        "text-slate-600 font-bold text-xs ml-8"
+                      )}
+                    >
+                      <span className="flex items-center gap-3 overflow-hidden">
+                        {item.type === 'header' && (
+                          <span className={cn(
+                            "shrink-0 font-black tracking-tighter",
+                            item.level === 1 ? "text-lg text-[#2563eb]" : 
+                            item.level === 2 ? "text-sm text-[#16a34a]" : 
+                            "text-[10px] text-slate-500"
+                          )}>
+                            {item.number}
+                          </span>
+                        )}
+                        {item.type === 'bullet' && (
+                          <span className="shrink-0 text-slate-400 font-bold">•</span>
+                        )}
+                        <span className={cn(
+                          "truncate transition-colors",
+                          item.level === 1 ? "font-black text-slate-900" :
+                          item.level === 2 ? "font-extrabold text-slate-800" :
+                          "font-bold text-slate-600"
+                        )}>{item.text}</span>
+                      </span>
+
+                      {item.hasChildren && (
+                        <div 
+                          onClick={toggleCollapse}
+                          className="p-1.5 rounded-md hover:bg-emerald-100/50 text-slate-400 hover:text-emerald-600 transition-colors"
+                        >
+                          {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="h-full group relative">
