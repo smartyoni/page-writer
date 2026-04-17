@@ -82,23 +82,12 @@ body {
     margin-bottom: 0.5rem !important;
 }
 
+/* Universal base styles (No media queries for font size) */
 .ProseMirror p {
-    font-size: 14px !important; /* Premium writing size for mobile */
+    font-size: 14px !important;
     line-height: 1.8 !important;
     color: #334155 !important;
     margin-bottom: 1rem !important;
-}
-
-@media (min-width: 300px) {
-    .ProseMirror p, .ProseMirror li {
-        font-size: 10px !important;
-    }
-    .ProseMirror > ul > li, .ProseMirror > ol > li {
-        font-size: 12px !important; /* Level 1: 10 + 2 */
-    }
-    .ProseMirror li li {
-        font-size: 9px !important;
-    }
 }
 
 .ProseMirror ul, .ProseMirror ol {
@@ -115,17 +104,17 @@ body {
     line-height: 1.8;
 }
 
-/* Level 1: Bold, Larger */
+/* Level 1: Bold, Large (Universal) */
 .ProseMirror > ul > li, .ProseMirror > ol > li {
     font-weight: 700 !important;
-    font-size: 16px !important; /* Mobile: 14 + 2 */
+    font-size: 16px !important; /* Base 14 + 2 */
     margin-bottom: 0.5rem !important;
 }
 
-/* Level 2+: Normal, Smaller, Tighter */
+/* Level 2+: Normal, Level-up size (Universal) */
 .ProseMirror li li {
     font-weight: 400 !important;
-    font-size: 0.95em !important;
+    font-size: 15px !important; /* Base 14 + 1 */
     margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
@@ -172,36 +161,22 @@ body {
 }
 
 .markdown-body ul, .markdown-body ol { @apply my-4 text-slate-700 font-medium; list-style-type: none; padding-left: 0; }
-.markdown-body ul { @apply space-y-1; } /* Reduced from space-y-2 */
+.markdown-body ul { @apply space-y-1; } 
 .markdown-body ol { @apply space-y-1; }
 
-.markdown-body li p {
-    @apply my-0.5; /* Tighten up paragraphs in preview lists */
-}
+.markdown-body li p { @apply my-0.5; }
 
-/* Preview List Hierarchy */
+/* Preview List Hierarchy (Universal) */
 .markdown-body > ul > li, .markdown-body > ol > li {
     font-weight: 700 !important;
-    font-size: 16px !important; /* Mobile: 14 + 2 */
+    font-size: 16px !important; /* Base 14 + 2 */
     @apply mb-3;
 }
 
 .markdown-body li li {
     font-weight: 400 !important;
-    font-size: 0.95em !important;
-    @apply mt-1 mb-1;
-}
-
-@media (min-width: 300px) {
-    .markdown-body p, .markdown-body li {
-        @apply text-[10px];
-    }
-    .markdown-body > ul > li, .markdown-body > ol > li {
-        @apply text-[12px];
-    }
-    .markdown-body li li {
-        @apply text-[9px];
-    }
+    font-size: 15px !important; /* Base 14 + 1 */
+    @apply mt-0 mb-0;
 }
 
 .markdown-body li { 
