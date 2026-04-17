@@ -82,7 +82,7 @@ export default function App() {
         id: {
           default: null,
           renderHTML: attributes => ({
-            id: attributes.id || attributes.textContent?.toLowerCase().replace(/\s+/g, '-'),
+            id: attributes.id || `header-${attributes.level}-${attributes.textContent?.toLowerCase().replace(/\s+/g, '-')}`,
           }),
           parseHTML: element => element.getAttribute('id'),
         },
@@ -414,14 +414,22 @@ export default function App() {
       // Try finding by ID first
       let element = document.getElementById(id);
       
-      // Fallback: Find by text matching the TOC logic
+      // Fallback: More robust text matching
       if (!element) {
         // Find both headers and list items
         const targets = document.querySelectorAll('.ProseMirror h1, .ProseMirror h2, .ProseMirror h3, .ProseMirror li');
+        
+        // Normalize the search ID (strip bullet- prefix for comparison)
+        const targetCleanText = id.replace(/^bullet-/, '').replace(/^header-\d-/, '').toLowerCase();
+
         element = Array.from(targets).find(el => {
-          const elText = el.textContent.trim().toLowerCase().replace(/\s+/g, '-');
-          // Match standard header ID or our custom bullet- prefix
-          return elText === id || `bullet-${elText}` === id;
+          // Get text and strip the common markers like "• " or "1. "
+          const elTextRaw = el.textContent.trim().toLowerCase();
+          const elTextClean = elTextRaw
+            .replace(/^([•*-]|\d+\.)\s+/, '') // Remove "• ", "1. ", "- ", etc.
+            .replace(/\s+/g, '-');
+          
+          return elTextClean === targetCleanText;
         });
       }
 
