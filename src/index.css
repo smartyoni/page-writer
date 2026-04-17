@@ -89,7 +89,7 @@ body {
     margin-bottom: 1rem !important;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 300px) {
     .ProseMirror p, .ProseMirror li {
         font-size: 10px !important;
     }
@@ -97,7 +97,7 @@ body {
         font-size: 12px !important; /* Level 1: 10 + 2 */
     }
     .ProseMirror li li {
-        font-size: 9px !important; /* One size smaller than 10px */
+        font-size: 9px !important;
     }
 }
 
@@ -126,8 +126,17 @@ body {
 .ProseMirror li li {
     font-weight: 400 !important;
     font-size: 0.95em !important;
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.ProseMirror li p {
+    margin-bottom: 2px !important; /* Remove large paragraph gaps inside lists */
+}
+
+.ProseMirror ul ul, .ProseMirror ol ol, .ProseMirror ul ol, .ProseMirror ol ul {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 @keyframes highlight-flash {
@@ -163,8 +172,12 @@ body {
 }
 
 .markdown-body ul, .markdown-body ol { @apply my-4 text-slate-700 font-medium; list-style-type: none; padding-left: 0; }
-.markdown-body ul { @apply space-y-2; }
-.markdown-body ol { @apply space-y-2; }
+.markdown-body ul { @apply space-y-1; } /* Reduced from space-y-2 */
+.markdown-body ol { @apply space-y-1; }
+
+.markdown-body li p {
+    @apply my-0.5; /* Tighten up paragraphs in preview lists */
+}
 
 /* Preview List Hierarchy */
 .markdown-body > ul > li, .markdown-body > ol > li {
@@ -179,12 +192,12 @@ body {
     @apply mt-1 mb-1;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 300px) {
     .markdown-body p, .markdown-body li {
         @apply text-[10px];
     }
     .markdown-body > ul > li, .markdown-body > ol > li {
-        @apply text-[12px]; /* Level 1: 10 + 2 */
+        @apply text-[12px];
     }
     .markdown-body li li {
         @apply text-[9px];
