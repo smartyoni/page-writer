@@ -362,43 +362,24 @@ export default function App() {
       if (headerMatch) {
         const level = headerMatch[1].length;
         const textLabel = headerMatch[2];
-        const id = textLabel.toLowerCase().replace(/\s+/g, '-');
+        const id = `header-${level}-${textLabel.toLowerCase().replace(/\s+/g, '-')}`;
 
         // Update counters
         counters[level - 1]++;
         for (let i = level; i < 3; i++) counters[i] = 0;
         const number = counters.slice(0, level).join('.') + '.';
         
-        const item = {
+        // Find potential parent header to mark it as having children
+        const parentHeader = items.slice().reverse().find(it => it.level < level);
+        if (parentHeader) parentHeader.hasChildren = true;
+
+        items.push({
           type: 'header',
           level,
           text: textLabel,
           number,
           id,
           hasChildren: false
-        };
-
-        if (level === 2) lastH2Id = id;
-        items.push(item);
-        return;
-      }
-
-      // Top-level bullet match (starts with -, *, + and NO preceding spaces)
-      const bulletMatch = line.match(/^([-*+])\s+(.*)$/);
-      if (bulletMatch && lastH2Id) {
-        const textLabel = bulletMatch[2];
-        const bulletId = `bullet-${textLabel.toLowerCase().replace(/\s+/g, '-')}`;
-        
-        // Mark the parent H2 as having children
-        const parentH2 = items.find(it => it.id === lastH2Id);
-        if (parentH2) parentH2.hasChildren = true;
-
-        items.push({
-          type: 'bullet',
-          parentId: lastH2Id,
-          text: textLabel,
-          id: bulletId,
-          level: 3 // Display bullets as Level 3 (indented)
         });
       }
     });
@@ -560,8 +541,7 @@ export default function App() {
             <div className="py-4 space-y-1">
               {toc.map((item, idx) => {
                 // Determine if this item should be visible based on its parent's collapse state
-                const isChild = item.type === 'bullet' || (item.type === 'header' && item.level > 1);
-                const parentHeader = isChild ? [...toc].slice(0, idx).reverse().find(it => it.type === 'header' && it.level < item.level) : null;
+                const parentHeader = toc.slice(0, idx).reverse().find(it => it.level < item.level);
                 const isHidden = parentHeader && collapsedTOCItems.has(parentHeader.id);
 
                 if (isHidden) return null;
@@ -589,19 +569,14 @@ export default function App() {
                       )}
                     >
                       <span className="flex items-center gap-3 overflow-hidden">
-                        {item.type === 'header' && (
-                          <span className={cn(
-                            "shrink-0 font-black tracking-tighter",
-                            item.level === 1 ? "text-lg text-[#2563eb]" : 
-                            item.level === 2 ? "text-sm text-[#16a34a]" : 
-                            "text-[10px] text-slate-500"
-                          )}>
-                            {item.number}
-                          </span>
-                        )}
-                        {item.type === 'bullet' && (
-                          <span className="shrink-0 text-slate-400 font-bold">•</span>
-                        )}
+                        <span className={cn(
+                          "shrink-0 font-black tracking-tighter",
+                          item.level === 1 ? "text-lg text-[#2563eb]" : 
+                          item.level === 2 ? "text-sm text-[#16a34a]" : 
+                          "text-[10px] text-slate-500"
+                        )}>
+                          {item.number}
+                        </span>
                         <span className={cn(
                           "truncate transition-colors",
                           item.level === 1 ? "font-black text-slate-900" :
