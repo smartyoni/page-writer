@@ -249,20 +249,20 @@ export default function App() {
       return;
     }
     setDeleteConfirmId(id);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setModalPosition(window.innerHeight - rect.bottom < 120 ? 'top' : 'bottom');
   };
 
   const confirmDelete = async (e) => {
     e.stopPropagation();
     const id = deleteConfirmId;
-    if (documents.length <= 1) {
-      alert("최소 한 개의 문서는 유지해야 합니다.");
+    if (!id) return;
+    
+    try {
+      await deleteDoc(doc(db, DOC_COLLECTION, id));
       setDeleteConfirmId(null);
-      return;
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      alert("문서 삭제 중 오류가 발생했습니다: " + error.message);
     }
-    await deleteDoc(doc(db, DOC_COLLECTION, id));
-    setDeleteConfirmId(null);
   };
 
   const handleClearNote = () => {
@@ -435,7 +435,7 @@ export default function App() {
                   onDragEnd={() => setDraggedItemIndex(null)}
                   onClick={() => handleSelectDoc(doc.id)} 
                   className={cn(
-                    "group flex items-center justify-between py-2.5 px-3 cursor-grab active:cursor-grabbing border-b border-emerald-900/5 transition-all duration-200",
+                    "relative group flex items-center justify-between py-2.5 px-3 cursor-grab active:cursor-grabbing border-b border-emerald-900/5 transition-all duration-200",
                     slots[activeSet] === doc.id ? "bg-emerald-100/50" : "hover:bg-emerald-100/30",
                     draggedItemIndex === idx && "opacity-40 bg-emerald-200 border-2 border-dashed border-emerald-400"
                   )}
@@ -448,8 +448,11 @@ export default function App() {
                       {getDocTitle(doc.content, doc.title)}
                     </h3>
                   </div>
-                  <button onClick={(e) => handleDeleteDoc(doc.id, e)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all p-1">
-                    <Trash2 size={16} />
+                  <button 
+                    onClick={(e) => handleDeleteDoc(doc.id, e)} 
+                    className="shrink-0 text-slate-400 hover:text-rose-500 transition-all p-2 rounded-lg hover:bg-rose-50/50"
+                  >
+                    <Trash2 size={18} />
                   </button>
                 </div>
               ))}
@@ -558,6 +561,41 @@ export default function App() {
             )}
           </div>
         </div>
+        {deleteConfirmId && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div 
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" 
+              onClick={() => setDeleteConfirmId(null)}
+            />
+            <div className="relative bg-white rounded-[32px] shadow-2xl border border-emerald-900/10 p-8 max-w-[320px] w-full transform transition-all animate-in fade-in zoom-in duration-200">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-rose-50 rounded-[24px] flex items-center justify-center text-rose-500 mb-6 shadow-inner">
+                  <Trash2 size={32} />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-2" style={{ fontFamily: "'Noto Serif KR', serif" }}>문서 삭제</h3>
+                <p className="text-sm font-bold text-slate-500 mb-8 leading-relaxed">
+                  정말 이 문서를 삭제하시겠습니까?<br/>
+                  <span className="text-rose-500/80">삭제된 문서는 복구할 수 없습니다.</span>
+                </p>
+                
+                <div className="flex w-full gap-3">
+                  <button 
+                    onClick={() => setDeleteConfirmId(null)} 
+                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
+                  >
+                    취소
+                  </button>
+                  <button 
+                    onClick={confirmDelete} 
+                    className="flex-1 py-4 rounded-2xl text-sm font-black bg-rose-500 text-white hover:bg-rose-600 shadow-xl shadow-rose-500/30 transition-all active:scale-95"
+                  >
+                    삭제하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
