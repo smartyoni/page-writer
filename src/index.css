@@ -90,11 +90,7 @@ body {
     margin-bottom: 1rem !important;
 }
 
-@media (min-width: 300px) {
-    .ProseMirror p, .ProseMirror li, .ProseMirror li p {
-        font-size: 11px !important;
-    }
-}
+
 
 .ProseMirror ul, .ProseMirror ol {
     margin-left: 1.5rem !important;
@@ -120,14 +116,7 @@ body {
     margin-bottom: 0.5rem !important; /* Increased from 0.25rem */
 }
 
-@media (min-width: 300px) {
-    .ProseMirror > ul > li, 
-    .ProseMirror > ol > li,
-    .ProseMirror > ul > li > p,
-    .ProseMirror > ol > li > p {
-        font-size: 14px !important; /* Desktop: 11 + 3 */
-    }
-}
+
 
 /* Level 2+: Normal, Level-up size */
 .ProseMirror li li,
@@ -139,12 +128,7 @@ body {
     line-height: 1.6 !important;
 }
 
-@media (min-width: 300px) {
-    .ProseMirror li li,
-    .ProseMirror li li p {
-        font-size: 12px !important; /* Desktop: was 11px */
-    }
-}
+
 
 .ProseMirror li p {
     margin-bottom: 0.3rem !important; /* Add gap between list items */
@@ -197,11 +181,7 @@ body {
     @apply my-2 leading-relaxed text-slate-800 text-[16px]; 
 }
 
-@media (min-width: 300px) {
-    .markdown-body p, .markdown-body li, .markdown-body li p {
-        @apply text-[11px];
-    }
-}
+
 
 .markdown-body ul, .markdown-body ol { @apply my-4 text-slate-700 font-medium; list-style-type: none; padding-left: 0; }
 .markdown-body ul { @apply space-y-1; } 
@@ -219,14 +199,7 @@ body {
     margin-bottom: 0.5rem !important; /* Increased gap */
 }
 
-@media (min-width: 300px) {
-    .markdown-body > ul > li, 
-    .markdown-body > ol > li,
-    .markdown-body > ul > li > p,
-    .markdown-body > ol > li > p {
-        font-size: 14px !important; /* Desktop */
-    }
-}
+
 
 .markdown-body li li,
 .markdown-body li li p {
@@ -237,12 +210,7 @@ body {
     margin-bottom: 0.3rem !important;
 }
 
-@media (min-width: 300px) {
-    .markdown-body li li,
-    .markdown-body li li p {
-        font-size: 12px !important; /* Desktop */
-    }
-}
+
 
 .markdown-body li { 
     @apply relative pl-6;
