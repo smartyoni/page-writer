@@ -42,8 +42,7 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-const DEFAULT_NOTE_1 = "# 제목 1\n이곳은 세트 A의 노트입니다.\n\n## 시작하기\n내용을 수정해보세요.";
-const DEFAULT_NOTE_2 = "# 제목 2\n이곳은 세트 B의 노트입니다.\n\n## 기능 안내\n목차 탭에서 헤더를 클릭하면 이동합니다.";
+
 
 const getDocTitle = (content) => {
   if (!content || !content.trim()) return "제목없음";
@@ -56,13 +55,11 @@ const DOC_COLLECTION = 'users/default_user/documents';
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
-  const [slots, setSlots] = useState(() => {
-    const saved = localStorage.getItem('post_helper_slots');
-    return saved ? JSON.parse(saved) : { A: '', B: '' };
+  const [currentDocId, setCurrentDocId] = useState(() => {
+    return localStorage.getItem('post_helper_current_doc') || '';
   });
 
-  const [activeSet, setActiveSet] = useState('A');
-  const [activeTab, setActiveTab] = useState('note'); // 'list', 'toc', 'note', 'settings'
+  const [activeTab, setActiveTab] = useState('note'); // 'list', 'toc', 'note'
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [modalPosition, setModalPosition] = useState('bottom');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -73,7 +70,6 @@ export default function App() {
   const saveTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const currentDocId = slots[activeSet];
   const currentDoc = documents.find(d => d.id === currentDocId) || documents[0];
 
   // Custom Heading extension to support IDs for TOC
@@ -173,14 +169,12 @@ export default function App() {
         };
       });
       setDocuments(docs);
-      
-      // Initial Slot Setup if empty
+
+      // Auto-select first doc if nothing is selected
       if (docs.length > 0) {
-        setSlots(prev => {
-          const next = { ...prev };
-          if (!prev.A) next.A = docs[0].id;
-          if (!prev.B) next.B = docs[0].id;
-          return next;
+        setCurrentDocId(prev => {
+          if (!prev || !docs.find(d => d.id === prev)) return docs[0].id;
+          return prev;
         });
       }
     });
@@ -188,8 +182,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('post_helper_slots', JSON.stringify(slots));
-  }, [slots]);
+    if (currentDocId) {
+      localStorage.setItem('post_helper_current_doc', currentDocId);
+    }
+  }, [currentDocId]);
 
   const handleNewDocWithContent = async (content) => {
     const id = Date.now().toString();
@@ -198,11 +194,10 @@ export default function App() {
       createdAt: Timestamp.now(),
       modifiedAt: Timestamp.now(),
       updatedAt: Date.now(),
-      // 리스트의 맨 위에 위치시키기 위해 가장 작은 order 값보다 1 작은 값을 부여합니다.
       order: documents.length > 0 ? Math.min(...documents.map(d => d.order || 0)) - 1 : 0
     };
     await setDoc(doc(db, DOC_COLLECTION, id), newDoc);
-    setSlots(prev => ({ ...prev, [activeSet]: id }));
+    setCurrentDocId(id);
     setActiveTab('note');
   };
 
@@ -243,7 +238,7 @@ export default function App() {
   };
 
   const handleSelectDoc = (id) => {
-    setSlots(prev => ({ ...prev, [activeSet]: id }));
+    setCurrentDocId(id);
     setActiveTab('note');
   };
 
@@ -540,7 +535,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden text-slate-900 font-medium bg-[#f2faf5]">
-      <div className="flex items-center justify-between border-b border-emerald-900/10 bg-emerald-50/80 backdrop-blur-md px-2 z-10">
+      <div className="flex items-center border-b border-emerald-900/10 bg-emerald-50/80 backdrop-blur-md px-2 z-10">
         <div className="flex">
           {['list', 'toc', 'note'].map((tab) => (
             <button 
@@ -553,20 +548,6 @@ export default function App() {
             >
               {tab === 'list' ? <Layout size={18}/> : tab === 'toc' ? <List size={18}/> : <FileText size={18}/>}
               <span className="font-bold text-sm capitalize">{tab}</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center p-1.5 gap-1 bg-emerald-900/5 rounded-xl mr-2">
-          {['A', 'B'].map(set => (
-            <button 
-              key={set}
-              onClick={() => setActiveSet(set)}
-              className={cn(
-                "px-3 py-1 rounded-lg text-xs font-bold transition-all",
-                activeSet === set ? "bg-primary text-white shadow-md" : "text-emerald-800/60"
-              )}
-            >
-              SET {set}
             </button>
           ))}
         </div>
@@ -587,7 +568,7 @@ export default function App() {
                   onClick={() => handleSelectDoc(doc.id)} 
                   className={cn(
                     "relative group flex items-center justify-between py-2.5 px-3 cursor-grab active:cursor-grabbing border-b border-emerald-900/5 transition-all duration-200",
-                    slots[activeSet] === doc.id ? "bg-emerald-100/50" : "hover:bg-emerald-100/30",
+                    currentDocId === doc.id ? "bg-emerald-100/50" : "hover:bg-emerald-100/30",
                     draggedItemIndex === idx && "opacity-40 bg-emerald-200 border-2 border-dashed border-emerald-400"
                   )}
                 >
