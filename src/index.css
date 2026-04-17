@@ -104,28 +104,36 @@ body {
     line-height: 1.8;
 }
 
-/* Level 1: Bold, Large (Universal) */
-.ProseMirror > ul > li, .ProseMirror > ol > li {
+/* Level 1: Bold, Large (Universal) - Target p inside li to beat global !important */
+.ProseMirror > ul > li, 
+.ProseMirror > ol > li,
+.ProseMirror > ul > li > p,
+.ProseMirror > ol > li > p {
     font-weight: 700 !important;
     font-size: 16px !important; /* Base 14 + 2 */
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0.25rem !important; /* Tightened */
 }
 
 /* Level 2+: Normal, Level-up size (Universal) */
-.ProseMirror li li {
+.ProseMirror li li,
+.ProseMirror li li p {
     font-weight: 400 !important;
     font-size: 15px !important; /* Base 14 + 1 */
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+    line-height: 1.6 !important;
 }
 
 .ProseMirror li p {
-    margin-bottom: 2px !important; /* Remove large paragraph gaps inside lists */
+    margin-bottom: 0px !important; /* Remove paragraph gaps inside lists */
+    margin-top: 0px !important;
 }
 
 .ProseMirror ul ul, .ProseMirror ol ol, .ProseMirror ul ol, .ProseMirror ol ul {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 @keyframes highlight-flash {
@@ -167,16 +175,22 @@ body {
 .markdown-body li p { @apply my-0.5; }
 
 /* Preview List Hierarchy (Universal) */
-.markdown-body > ul > li, .markdown-body > ol > li {
+.markdown-body > ul > li, 
+.markdown-body > ol > li,
+.markdown-body > ul > li > p,
+.markdown-body > ol > li > p {
     font-weight: 700 !important;
-    font-size: 16px !important; /* Base 14 + 2 */
-    @apply mb-3;
+    font-size: 16px !important;
+    @apply mb-1; /* Tightened from mb-3 */
 }
 
-.markdown-body li li {
+.markdown-body li li,
+.markdown-body li li p {
     font-weight: 400 !important;
-    font-size: 15px !important; /* Base 14 + 1 */
+    font-size: 15px !important;
     @apply mt-0 mb-0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 .markdown-body li { 
