@@ -43,13 +43,11 @@ function cn(...inputs) {
 const DEFAULT_NOTE_1 = "# 제목 1\n이곳은 세트 A의 노트입니다.\n\n## 시작하기\n내용을 수정해보세요.";
 const DEFAULT_NOTE_2 = "# 제목 2\n이곳은 세트 B의 노트입니다.\n\n## 기능 안내\n목차 탭에서 헤더를 클릭하면 이동합니다.";
 
-const getDocTitle = (content, legacyTitle) => {
-  if (legacyTitle) return legacyTitle;
-  if (!content) return "새 문서";
+const getDocTitle = (content) => {
+  if (!content || !content.trim()) return "제목없음";
   const match = content.match(/^#\s+(.*)$/m);
   if (match && match[1].trim()) return match[1].trim();
-  const firstLine = content.trim().split('\n')?.filter(l => l.trim())[0];
-  return firstLine?.substring(0, 25) || "제목 없음";
+  return "제목없음";
 };
 
 const DOC_COLLECTION = 'users/default_user/documents';
@@ -188,11 +186,10 @@ export default function App() {
     localStorage.setItem('post_helper_slots', JSON.stringify(slots));
   }, [slots]);
 
-  const handleNewDocWithContent = async (content, title) => {
+  const handleNewDocWithContent = async (content) => {
     const id = Date.now().toString();
     const newDoc = {
-      title: title || '제목 없음',
-      content: content || "# 새 문서\n이곳에 내용을 입력하세요.",
+      content: content || "# ",
       createdAt: Timestamp.now(),
       modifiedAt: Timestamp.now(),
       updatedAt: Date.now(),
@@ -204,7 +201,7 @@ export default function App() {
     setActiveTab('note');
   };
 
-  const handleNewDoc = () => handleNewDocWithContent('', '제목 없음');
+  const handleNewDoc = () => handleNewDocWithContent('');
 
   const handleFileImport = (e) => {
     const file = e.target.files[0];
@@ -214,7 +211,7 @@ export default function App() {
     reader.onload = (event) => {
       const content = event.target.result;
       const title = file.name.replace(/\.[^/.]+$/, ""); // 확장자 제거
-      handleNewDocWithContent(content, title);
+      handleNewDocWithContent(`# ${title}\n\n${content}`);
     };
     reader.readAsText(file);
     e.target.value = null; // 리셋
@@ -228,7 +225,8 @@ export default function App() {
     const link = document.createElement('a');
     
     // 파일명 정제 (제목 또는 첫 줄 사용)
-    const rawTitle = getDocTitle(markdown, currentDoc.title);
+    // 제목 가져오기 (# 헤더 우선)
+    const rawTitle = getDocTitle(markdown);
     const safeTitle = rawTitle.replace(/[<>:"/\\|?*]/g, "").substring(0, 50);
     
     link.href = url;
@@ -465,7 +463,7 @@ export default function App() {
                       {idx + 1}
                     </span>
                     <h3 className="font-bold text-[14px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Noto Serif KR', serif" }}>
-                      {getDocTitle(doc.content, doc.title)}
+                      {getDocTitle(doc.content)}
                     </h3>
                   </div>
                   <div className="flex items-center bg-slate-100/50 p-1 rounded-xl gap-0.5 border border-slate-200/50">
