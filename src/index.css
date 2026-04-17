@@ -91,7 +91,7 @@ body {
 
 @media (min-width: 1024px) {
     .ProseMirror p {
-        font-size: 12px !important; /* Changed from 13px to 12px as requested */
+        font-size: 10px !important; /* Changed from 12px to 10px as requested */
     }
 }
 
@@ -145,7 +145,7 @@ body {
 
 @media (min-width: 1024px) {
     .markdown-body p {
-        @apply text-[12px];
+        @apply text-[10px];
     }
 }
 .markdown-body ul { @apply my-4 text-slate-700 font-medium space-y-2; list-style-type: none; padding-left: 0; }
