@@ -16,7 +16,9 @@ import {
   Cloud,
   Smartphone,
   Upload,
-  Download
+  Download,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -253,10 +255,26 @@ export default function App() {
     setModalPosition(window.innerHeight - rect.bottom < 100 ? 'top' : 'bottom');
   };
 
+  const handleToggleLock = async (docId, isLocked, e) => {
+    e.stopPropagation();
+    try {
+      await setDoc(doc(db, DOC_COLLECTION, docId), { isLocked: !isLocked }, { merge: true });
+    } catch (error) {
+      console.error("Error toggling lock: ", error);
+    }
+  };
+
   const confirmDelete = async (e) => {
     e.stopPropagation();
     const id = deleteConfirmId;
     if (!id) return;
+
+    const targetDoc = documents.find(d => d.id === id);
+    if (targetDoc?.isLocked) {
+      alert("잠긴 문서는 삭제할 수 없습니다. 먼저 잠금을 해제해주세요.");
+      setDeleteConfirmId(null);
+      return;
+    }
     
     try {
       await deleteDoc(doc(db, DOC_COLLECTION, id));
@@ -450,12 +468,30 @@ export default function App() {
                       {getDocTitle(doc.content, doc.title)}
                     </h3>
                   </div>
-                  <button 
-                    onClick={(e) => handleDeleteDoc(doc.id, e)} 
-                    className="shrink-0 text-slate-400 hover:text-rose-500 transition-all p-2 rounded-lg hover:bg-rose-50/50"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex items-center bg-slate-100/50 p-1 rounded-xl gap-0.5 border border-slate-200/50">
+                    <button 
+                      onClick={(e) => handleToggleLock(doc.id, doc.isLocked, e)}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        doc.isLocked ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                      )}
+                      title={doc.isLocked ? "잠금 해제" : "잠금"}
+                    >
+                      {doc.isLocked ? <Lock size={15} /> : <Unlock size={15} />}
+                    </button>
+                    <div className="w-[1px] h-3 bg-slate-300/50 mx-0.5" />
+                    <button 
+                      onClick={(e) => !doc.isLocked && handleDeleteDoc(doc.id, e)} 
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        doc.isLocked ? "opacity-30 cursor-not-allowed" : "text-slate-400 hover:text-rose-500 hover:bg-rose-50/50"
+                      )}
+                      disabled={doc.isLocked}
+                      title="삭제"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                   {deleteConfirmId === doc.id && (
                     <div 
                       className={cn(
