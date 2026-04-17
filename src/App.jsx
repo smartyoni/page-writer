@@ -69,6 +69,8 @@ export default function App() {
   const [dragOverTOCIndex, setDragOverTOCIndex] = useState(null);
   const saveTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+  const touchStartXRef = useRef(null);
+  const touchStartYRef = useRef(null);
 
   const currentDoc = documents.find(d => d.id === currentDocId) || documents[0];
 
@@ -533,6 +535,35 @@ export default function App() {
     navigator.clipboard.writeText(currentDoc.content.trim());
   };
 
+  // --- Swipe gesture for tab switching ---
+  const TABS = ['list', 'toc', 'note'];
+
+  const handleTouchStart = (e) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartXRef.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+
+    // Only trigger if horizontal swipe is dominant and exceeds threshold
+    const THRESHOLD = 50;
+    if (Math.abs(deltaX) < THRESHOLD || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+    const currentIdx = TABS.indexOf(activeTab);
+    if (deltaX < 0) {
+      // Swipe left → next tab
+      if (currentIdx < TABS.length - 1) setActiveTab(TABS[currentIdx + 1]);
+    } else {
+      // Swipe right → previous tab
+      if (currentIdx > 0) setActiveTab(TABS[currentIdx - 1]);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen overflow-hidden text-slate-900 font-medium bg-[#f2faf5]">
       <div className="flex items-center border-b border-emerald-900/10 bg-emerald-50/80 backdrop-blur-md px-2 z-10">
@@ -553,7 +584,11 @@ export default function App() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto relative px-4 pt-1 pb-4 lg:px-6 lg:pb-6 custom-scrollbar">
+      <main
+        className="flex-1 overflow-y-auto relative px-4 pt-1 pb-4 lg:px-6 lg:pb-6 custom-scrollbar"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="max-w-4xl mx-auto h-full">
           {activeTab === 'list' ? (
             <div className="py-4">
