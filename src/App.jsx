@@ -604,10 +604,10 @@ export default function App() {
                   )}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <span className="shrink-0 font-black text-[14px] text-rose-500/80 w-5 font-serif italic" style={{ fontFamily: "'Noto Serif KR', serif" }}>
+                    <span className="shrink-0 font-black text-[14px] text-rose-500/80 w-5 font-serif italic">
                       {idx + 1}
                     </span>
-                    <h3 className="font-bold text-[14px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Noto Serif KR', serif" }}>
+                    <h3 className="font-bold text-[14px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors">
                       {getDocTitle(doc.content)}
                     </h3>
                   </div>

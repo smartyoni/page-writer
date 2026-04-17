@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Noto Serif KR"', 'serif'],
+        serif: ['"Noto Serif KR"', 'serif'],
+      },
       colors: {
         background: "#f0fdf4", // Light green (Emerald 50)
         foreground: "#064e3b", // Dark emerald (Emerald 900)
