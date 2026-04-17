@@ -122,7 +122,7 @@ export default function App() {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-emerald max-w-none focus:outline-none min-h-[500px] text-[15px] text-slate-700 leading-relaxed custom-editor',
+        class: 'prose prose-emerald max-w-none focus:outline-none min-h-[500px] text-[16px] text-slate-700 leading-relaxed custom-editor',
       },
     },
   }, [currentDocId]);
