@@ -122,7 +122,7 @@ export default function App() {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-emerald max-w-none focus:outline-none min-h-[500px] text-sm text-slate-700 leading-relaxed custom-editor',
+        class: 'prose prose-emerald max-w-none focus:outline-none min-h-[500px] text-[15px] text-slate-700 leading-relaxed custom-editor',
       },
     },
   }, [currentDocId]);
@@ -561,7 +561,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden text-slate-900 font-medium bg-[#f2faf5]">
+    <div className="flex flex-col h-screen overflow-hidden text-slate-900 bg-[#f2faf5]">
       <div className="flex items-center border-b border-emerald-900/10 bg-emerald-50/80 backdrop-blur-md px-2 z-10">
         <div className="flex">
           {['list', 'toc', 'note'].map((tab) => (
@@ -604,10 +604,10 @@ export default function App() {
                   )}
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <span className="shrink-0 font-black text-[15px] text-rose-500/80 w-5 font-serif italic" style={{ fontFamily: "'Noto Serif KR', serif" }}>
+                    <span className="shrink-0 font-black text-[16px] text-rose-500/80 w-5 font-serif italic" style={{ fontFamily: "'Noto Serif KR', serif" }}>
                       {idx + 1}
                     </span>
-                    <h3 className="font-bold text-[14px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Noto Serif KR', serif" }}>
+                    <h3 className="font-bold text-[15px] truncate text-slate-700 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: "'Noto Serif KR', serif" }}>
                       {getDocTitle(doc.content)}
                     </h3>
                   </div>
